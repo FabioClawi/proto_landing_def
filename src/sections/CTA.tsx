@@ -6,13 +6,13 @@ gsap.registerPlugin(ScrollTrigger)
 
 /* ─── Planets ─── */
 const PLANETS = [
-  { label: 'Excel & Datos',   color: '#0BB3A4', r: 68,  angSpeed: 68,  startAngle: 0,   size: 5 },
-  { label: 'IA Aplicada',     color: '#75C1E7', r: 108, angSpeed: 47,  startAngle: 110, size: 4.5 },
-  { label: 'Procesos',        color: '#B39DDB', r: 146, angSpeed: 30,  startAngle: 220, size: 4.5 },
-  { label: 'Herramientas',    color: '#FFA07A', r: 182, angSpeed: 18,  startAngle: 310, size: 4 },
-  { label: 'Automatización',  color: '#6BCB77', r: 216, angSpeed: 11,  startAngle: 60,  size: 4.5 },
+  { label: 'Excel & Datos',   color: '#0BB3A4', r: 92,  angSpeed: 68,  startAngle: 0,   size: 7   },
+  { label: 'IA Aplicada',     color: '#75C1E7', r: 152, angSpeed: 47,  startAngle: 110, size: 6.5 },
+  { label: 'Procesos',        color: '#B39DDB', r: 208, angSpeed: 30,  startAngle: 220, size: 6.5 },
+  { label: 'Herramientas',    color: '#FFA07A', r: 262, angSpeed: 18,  startAngle: 310, size: 6   },
+  { label: 'Automatización',  color: '#6BCB77', r: 316, angSpeed: 11,  startAngle: 60,  size: 6.5 },
 ]
-const TRAIL_LEN = 18
+const TRAIL_LEN = 22
 
 /* ─── Solar system canvas ─── */
 function SolarSystemCanvas() {
@@ -128,10 +128,10 @@ function SolarSystemCanvas() {
         const dx = px - CX, dy = py - CY
         const len = Math.sqrt(dx*dx + dy*dy) || 1
         const nx = dx/len, ny = dy/len
-        const lx = px + nx * (p.size + 16)
-        const ly = py + ny * (p.size + 16)
+        const lx = px + nx * (p.size + 14)
+        const ly = py + ny * (p.size + 14)
 
-        ctx.font = '500 12px Poppins, sans-serif'
+        ctx.font = '500 13px Poppins, sans-serif'
         ctx.fillStyle = p.color
         ctx.globalAlpha = 0.9
         ctx.textAlign    = lx > CX + 8 ? 'left' : lx < CX - 8 ? 'right' : 'center'
@@ -155,8 +155,8 @@ function SolarSystemCanvas() {
   return (
     <canvas
       ref={canvasRef}
-      width={560}
-      height={560}
+      width={760}
+      height={760}
       data-no-transition
       style={{ width: '100%', display: 'block' }}
     />
@@ -196,8 +196,8 @@ export default function CTA() {
     >
       <div style={{
         maxWidth: '1100px', margin: '0 auto', padding: '0 48px',
-        display: 'grid', gridTemplateColumns: '55fr 45fr',
-        gap: '72px', alignItems: 'center',
+        display: 'grid', gridTemplateColumns: '1fr 1fr',
+        gap: '48px', alignItems: 'center',
       }}>
 
         {/* ── Left ── */}
