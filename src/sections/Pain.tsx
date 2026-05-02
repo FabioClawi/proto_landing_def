@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-gsap.registerPlugin(ScrollTrigger)
 
 const CHIPS = [
   'Excel manual',
@@ -54,32 +51,34 @@ export default function Pain() {
 
   /* Entry animations */
   useEffect(() => {
-    const tl = gsap.timeline({
-      scrollTrigger: { trigger: sectionRef.current, start: 'top 68%' },
-    })
-
-    tl.fromTo(leftRef.current,
-      { x: -40, opacity: 0 },
-      { x: 0, opacity: 1, duration: 0.75, ease: 'power3.out' }
-    ).fromTo(rightRef.current,
-      { x: 40, opacity: 0 },
-      { x: 0, opacity: 1, duration: 0.75, ease: 'power3.out' },
-      '-=0.55'
-    )
-
-    if (chipsRef.current) {
-      gsap.fromTo(
-        chipsRef.current.querySelectorAll<HTMLElement>('[data-chip]'),
-        { y: 14, opacity: 0 },
-        {
-          y: 0, opacity: 1, stagger: 0.055, duration: 0.3, ease: 'power2.out',
-          scrollTrigger: { trigger: chipsRef.current, start: 'top 75%' },
-          delay: 0.25,
-        }
+    const ctx = gsap.context(() => {
+      gsap.timeline({
+        scrollTrigger: { trigger: sectionRef.current, start: 'top 68%' },
+      })
+      .fromTo(leftRef.current,
+        { x: -40, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.75, ease: 'power3.out' }
       )
-    }
+      .fromTo(rightRef.current,
+        { x: 40, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.75, ease: 'power3.out' },
+        '-=0.55'
+      )
 
-    return () => { ScrollTrigger.getAll().forEach(t => t.kill()) }
+      if (chipsRef.current) {
+        gsap.fromTo(
+          chipsRef.current.querySelectorAll<HTMLElement>('[data-chip]'),
+          { y: 14, opacity: 0 },
+          {
+            y: 0, opacity: 1, stagger: 0.055, duration: 0.3, ease: 'power2.out',
+            scrollTrigger: { trigger: chipsRef.current, start: 'top 75%' },
+            delay: 0.25,
+          }
+        )
+      }
+    }, sectionRef)
+
+    return () => ctx.revert()
   }, [])
 
   const activeColor = COLORS[colorIdx]
