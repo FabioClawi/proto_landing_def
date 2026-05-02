@@ -4,20 +4,22 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-/* ─── Planets — each area of the business orbits at its own speed ─── */
+/* ─── Planets ─── */
 const PLANETS = [
-  { label: 'Excel & Datos',   color: '#0BB3A4', r: 54,  angSpeed: 68,  startAngle: 0,   size: 6.5 },
-  { label: 'IA Aplicada',     color: '#75C1E7', r: 86,  angSpeed: 47,  startAngle: 110, size: 5.5 },
-  { label: 'Procesos',        color: '#B39DDB', r: 116, angSpeed: 30,  startAngle: 220, size: 6   },
-  { label: 'Herramientas',    color: '#FFA07A', r: 148, angSpeed: 18,  startAngle: 310, size: 5   },
-  { label: 'Automatización',  color: '#6BCB77', r: 178, angSpeed: 11,  startAngle: 60,  size: 5.5 },
+  { label: 'Excel & Datos',   color: '#0BB3A4', r: 68,  angSpeed: 68,  startAngle: 0,   size: 5 },
+  { label: 'IA Aplicada',     color: '#75C1E7', r: 108, angSpeed: 47,  startAngle: 110, size: 4.5 },
+  { label: 'Procesos',        color: '#B39DDB', r: 146, angSpeed: 30,  startAngle: 220, size: 4.5 },
+  { label: 'Herramientas',    color: '#FFA07A', r: 182, angSpeed: 18,  startAngle: 310, size: 4 },
+  { label: 'Automatización',  color: '#6BCB77', r: 216, angSpeed: 11,  startAngle: 60,  size: 4.5 },
 ]
+const TRAIL_LEN = 18
 
 /* ─── Solar system canvas ─── */
 function SolarSystemCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef    = useRef<number>(0)
   const startRef  = useRef<number>(0)
+  const trailsRef = useRef<{x:number,y:number}[][]>(PLANETS.map(() => []))
 
   useEffect(() => {
     const canvas = canvasRef.current!
@@ -26,7 +28,7 @@ function SolarSystemCanvas() {
     const H = canvas.height
     const CX = W / 2
     const CY = H / 2
-    const BG_R = PLANETS[4].r + 30
+    const BG_R = PLANETS[4].r + 38
 
     function draw(ts: number) {
       if (!startRef.current) startRef.current = ts
@@ -34,84 +36,112 @@ function SolarSystemCanvas() {
 
       ctx.clearRect(0, 0, W, H)
 
-      /* Dark circular background */
-      ctx.save()
+      /* Dark circular bg with subtle radial gradient */
+      const bgGrad = ctx.createRadialGradient(CX, CY, 0, CX, CY, BG_R)
+      bgGrad.addColorStop(0,   '#0A0C20')
+      bgGrad.addColorStop(1,   '#040510')
       ctx.beginPath()
       ctx.arc(CX, CY, BG_R, 0, Math.PI * 2)
-      ctx.fillStyle = '#06071A'
+      ctx.fillStyle = bgGrad
       ctx.fill()
+
+      /* Subtle crosshair */
+      ctx.save()
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)'
+      ctx.lineWidth = 0.5
+      ctx.beginPath()
+      ctx.moveTo(CX - BG_R, CY); ctx.lineTo(CX + BG_R, CY)
+      ctx.moveTo(CX, CY - BG_R); ctx.lineTo(CX, CY + BG_R)
+      ctx.stroke()
       ctx.restore()
 
-      /* Orbital rings */
-      ctx.setLineDash([3, 9])
+      /* Orbital rings — fine dashes */
       for (const p of PLANETS) {
+        ctx.setLineDash([2, 10])
         ctx.beginPath()
         ctx.arc(CX, CY, p.r, 0, Math.PI * 2)
-        ctx.strokeStyle = 'rgba(255,255,255,0.07)'
-        ctx.lineWidth = 1
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)'
+        ctx.lineWidth = 0.75
         ctx.stroke()
+        ctx.setLineDash([])
+
+        /* Tiny tick marks every 45° on each orbit */
+        for (let a = 0; a < 360; a += 45) {
+          const tickRad = (a - 90) * Math.PI / 180
+          const x1 = CX + (p.r - 3) * Math.cos(tickRad)
+          const y1 = CY + (p.r - 3) * Math.sin(tickRad)
+          const x2 = CX + (p.r + 3) * Math.cos(tickRad)
+          const y2 = CY + (p.r + 3) * Math.sin(tickRad)
+          ctx.beginPath()
+          ctx.moveTo(x1, y1); ctx.lineTo(x2, y2)
+          ctx.strokeStyle = 'rgba(255,255,255,0.08)'
+          ctx.lineWidth = 0.75
+          ctx.stroke()
+        }
       }
-      ctx.setLineDash([])
 
-      /* Central star */
-      const pulse = 0.5 + 0.5 * Math.sin(ts * 0.0022)
-      ctx.beginPath()
-      ctx.arc(CX, CY, 11 + pulse * 5, 0, Math.PI * 2)
-      ctx.fillStyle = 'rgba(11,179,164,0.1)'
-      ctx.fill()
-      ctx.beginPath()
-      ctx.arc(CX, CY, 7 + pulse * 2, 0, Math.PI * 2)
-      ctx.fillStyle = 'rgba(11,179,164,0.2)'
-      ctx.fill()
-      ctx.beginPath()
-      ctx.arc(CX, CY, 5, 0, Math.PI * 2)
-      ctx.fillStyle = '#0BB3A4'
-      ctx.shadowColor = '#0BB3A4'
-      ctx.shadowBlur = 18
-      ctx.fill()
-      ctx.shadowBlur = 0
-
-      /* Planets */
-      for (const p of PLANETS) {
-        const rad  = ((p.startAngle + elapsed * p.angSpeed) % 360 - 90) * (Math.PI / 180)
-        const px   = CX + p.r * Math.cos(rad)
-        const py   = CY + p.r * Math.sin(rad)
-
-        /* Atmosphere glow */
+      /* Central star — layered pulse */
+      const pulse = 0.5 + 0.5 * Math.sin(ts * 0.002)
+      for (const [r, a] of [[18 + pulse*6, 0.06], [11 + pulse*3, 0.12], [6, 1]] as [number,number][]) {
         ctx.beginPath()
-        ctx.arc(px, py, p.size + 5, 0, Math.PI * 2)
-        ctx.fillStyle = p.color
-        ctx.globalAlpha = 0.13
+        ctx.arc(CX, CY, r, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(11,179,164,${a})`
+        if (a === 1) { ctx.shadowColor = '#0BB3A4'; ctx.shadowBlur = 20 }
         ctx.fill()
+        ctx.shadowBlur = 0
+      }
+
+      /* Planets + trails + labels */
+      for (let i = 0; i < PLANETS.length; i++) {
+        const p = PLANETS[i]
+        const rad = ((p.startAngle + elapsed * p.angSpeed) % 360 - 90) * Math.PI / 180
+        const px  = CX + p.r * Math.cos(rad)
+        const py  = CY + p.r * Math.sin(rad)
+
+        /* Update trail */
+        const trail = trailsRef.current[i]
+        trail.unshift({ x: px, y: py })
+        if (trail.length > TRAIL_LEN) trail.pop()
+
+        /* Draw trail */
+        for (let t = 1; t < trail.length; t++) {
+          const alpha = (1 - t / TRAIL_LEN) * 0.35
+          const r2    = p.size * (1 - t / TRAIL_LEN) * 0.7
+          ctx.beginPath()
+          ctx.arc(trail[t].x, trail[t].y, Math.max(r2, 0.5), 0, Math.PI * 2)
+          ctx.fillStyle = p.color
+          ctx.globalAlpha = alpha
+          ctx.fill()
+        }
         ctx.globalAlpha = 1
 
-        /* Planet */
+        /* Planet dot — clean, no halo */
         ctx.beginPath()
         ctx.arc(px, py, p.size, 0, Math.PI * 2)
         ctx.fillStyle = p.color
         ctx.shadowColor = p.color
-        ctx.shadowBlur = 12
+        ctx.shadowBlur = 8
         ctx.fill()
         ctx.shadowBlur = 0
 
-        /* Label — offset outward from center, always horizontal */
-        const dx  = px - CX
-        const dy  = py - CY
-        const len = Math.sqrt(dx * dx + dy * dy) || 1
-        const nx  = dx / len
-        const ny  = dy / len
-        const lx  = px + nx * (p.size + 11)
-        const ly  = py + ny * (p.size + 11)
+        /* Label — offset outward, larger font */
+        const dx = px - CX, dy = py - CY
+        const len = Math.sqrt(dx*dx + dy*dy) || 1
+        const nx = dx/len, ny = dy/len
+        const lx = px + nx * (p.size + 16)
+        const ly = py + ny * (p.size + 16)
 
-        ctx.font         = '500 10.5px Poppins, sans-serif'
-        ctx.fillStyle    = p.color
-        ctx.globalAlpha  = 0.88
-        ctx.textAlign    = lx > CX + 6 ? 'left' : lx < CX - 6 ? 'right' : 'center'
-        ctx.textBaseline = ly > CY + 6 ? 'top'  : ly < CY - 6 ? 'bottom' : 'middle'
+        ctx.font = '500 12px Poppins, sans-serif'
+        ctx.fillStyle = p.color
+        ctx.globalAlpha = 0.9
+        ctx.textAlign    = lx > CX + 8 ? 'left' : lx < CX - 8 ? 'right' : 'center'
+        ctx.textBaseline = ly > CY + 8 ? 'top'  : ly < CY - 8 ? 'bottom' : 'middle'
         ctx.shadowColor  = p.color
-        ctx.shadowBlur   = 5
+        ctx.shadowBlur   = 6
         ctx.fillText(p.label, lx, ly)
         ctx.shadowBlur   = 0
+        ctx.globalAlpha  = 1
+
         ctx.globalAlpha  = 1
       }
 
@@ -125,10 +155,10 @@ function SolarSystemCanvas() {
   return (
     <canvas
       ref={canvasRef}
-      width={460}
-      height={460}
+      width={560}
+      height={560}
       data-no-transition
-      style={{ width: '100%', maxWidth: '500px', display: 'block', margin: '0 auto' }}
+      style={{ width: '100%', display: 'block' }}
     />
   )
 }
