@@ -3,19 +3,19 @@
 @theme {
   --font-sans: 'Poppins', 'Raleway', sans-serif;
 
-  --color-primary:          #0BB3A4;
-  --color-primary-light:    #75C1E7;
-  --color-accent:           #0D15B2;
-  --color-deep:             #000050;
-  --color-neutral:          #353535;
-  --color-ink:              #000000;
-  --color-surface:          #FFFFFF;
-  --color-surface-secondary:#F5FAFA;
-  --color-success:          #156B47;
-  --color-error:            #C62828;
-  --color-warning:          #A85500;
-  --color-disabled-bg:      #E8E8E8;
-  --color-disabled-text:    #595959;
+  /* Brand constants — never change between themes */
+  --color-primary:           #0BB3A4;
+  --color-primary-light:     #75C1E7;
+  --color-accent:            #0D15B2;
+  --color-deep:              #000050;
+  --color-success:           #156B47;
+  --color-success-surface:   #E8F5EE;
+  --color-error:             #C62828;
+  --color-error-surface:     #FFEBEE;
+  --color-warning:           #A85500;
+  --color-warning-surface:   #FFF3E0;
+  --color-disabled-bg:       #E8E8E8;
+  --color-disabled-text:     #595959;
 
   --spacing-xs:  4px;
   --spacing-sm:  8px;
@@ -30,6 +30,52 @@
   --radius-full: 9999px;
 }
 
+/* ─── Light theme (default) ─── */
+:root {
+  --bg:               #FFFFFF;
+  --bg-secondary:     #F5FAFA;
+  --bg-dark:          #000050;
+  --text-body:        #353535;
+  --text-heading:     #000000;
+  --text-on-dark:     #FFFFFF;
+  --text-muted:       #595959;
+  --border:           rgba(0, 0, 0, 0.08);
+  --border-input:     rgba(0, 0, 0, 0.15);
+  --card-bg:          #FFFFFF;
+  --card-bg-dark:     #000050;
+  --nav-bg:           rgba(255, 255, 255, 0.85);
+  --nav-border:       rgba(0, 0, 0, 0.08);
+  --shadow-card:      0 4px 24px rgba(0, 0, 0, 0.08);
+  --overlay:          rgba(0, 0, 80, 0.5);
+
+  /* Hero section stays dark in both themes */
+  --hero-bg:          #000050;
+  --hero-text:        #FFFFFF;
+}
+
+/* ─── Dark theme ─── */
+[data-theme="dark"] {
+  --bg:               #06071A;
+  --bg-secondary:     #0D0F2E;
+  --bg-dark:          #000050;
+  --text-body:        #C8CDE8;
+  --text-heading:     #FFFFFF;
+  --text-on-dark:     #FFFFFF;
+  --text-muted:       #8890B8;
+  --border:           rgba(255, 255, 255, 0.08);
+  --border-input:     rgba(255, 255, 255, 0.15);
+  --card-bg:          #0D0F2E;
+  --card-bg-dark:     #000050;
+  --nav-bg:           rgba(6, 7, 26, 0.85);
+  --nav-border:       rgba(255, 255, 255, 0.08);
+  --shadow-card:      0 4px 24px rgba(0, 0, 0, 0.4);
+  --overlay:          rgba(0, 0, 0, 0.6);
+
+  --hero-bg:          #000050;
+  --hero-text:        #FFFFFF;
+}
+
+/* ─── Base reset ─── */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -37,19 +83,30 @@
 }
 
 html {
-  scroll-behavior: auto; /* Lenis handles this */
+  scroll-behavior: auto; /* Lenis handles smooth scroll */
 }
 
 body {
-  font-family: var(--font-sans);
-  background: #000050;
-  color: #FFFFFF;
+  font-family: 'Poppins', 'Raleway', sans-serif;
+  background-color: var(--bg);
+  color: var(--text-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {
   width: 100%;
   min-height: 100vh;
+}
+
+/* ─── Smooth theme transition on all elements ─── */
+*, *::before, *::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Exclude animated elements from transition interference */
+canvas, [data-no-transition] {
+  transition: none !important;
 }
