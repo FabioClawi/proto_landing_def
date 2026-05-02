@@ -5,6 +5,7 @@ import Pain     from './sections/Pain'
 import Solution from './sections/Solution'
 import CTA         from './sections/CTA'
 import SocialProof from './sections/SocialProof'
+import Footer      from './sections/Footer'
 import { useTheme } from './hooks/useTheme'
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
       <Solution />
       <CTA />
       <SocialProof />
+      <Footer />
 
       {/* Placeholder — remaining sections coming soon */}
       <div style={{
