@@ -4,20 +4,17 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-/* ─── Radar axes ─── */
-const AXES = [
-  { angle: 0,   label: 'Excel & Datos',   color: '#0BB3A4' },
-  { angle: 72,  label: 'IA Aplicada',     color: '#75C1E7' },
-  { angle: 144, label: 'Procesos',        color: '#B39DDB' },
-  { angle: 216, label: 'Herramientas',    color: '#FFA07A' },
-  { angle: 288, label: 'Automatización',  color: '#6BCB77' },
+/* ─── Planets — each area of the business orbits at its own speed ─── */
+const PLANETS = [
+  { label: 'Excel & Datos',   color: '#0BB3A4', r: 54,  angSpeed: 68,  startAngle: 0,   size: 6.5 },
+  { label: 'IA Aplicada',     color: '#75C1E7', r: 86,  angSpeed: 47,  startAngle: 110, size: 5.5 },
+  { label: 'Procesos',        color: '#B39DDB', r: 116, angSpeed: 30,  startAngle: 220, size: 6   },
+  { label: 'Herramientas',    color: '#FFA07A', r: 148, angSpeed: 18,  startAngle: 310, size: 5   },
+  { label: 'Automatización',  color: '#6BCB77', r: 178, angSpeed: 11,  startAngle: 60,  size: 5.5 },
 ]
 
-const REVOLUTION_MS = 6000   // 1 full rotation in 6 seconds
-const TRAIL_DEG     = 60     // degrees of sweep trail
-
-/* ─── Canvas radar ─── */
-function RadarCanvas() {
+/* ─── Solar system canvas ─── */
+function SolarSystemCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef    = useRef<number>(0)
   const startRef  = useRef<number>(0)
@@ -29,180 +26,94 @@ function RadarCanvas() {
     const H = canvas.height
     const CX = W / 2
     const CY = H / 2
-    const R  = W * 0.40   // outer radius
+    const BG_R = PLANETS[4].r + 30
 
     function draw(ts: number) {
       if (!startRef.current) startRef.current = ts
-      const sweepDeg = ((ts - startRef.current) / REVOLUTION_MS * 360) % 360
-      const sweepRad = (sweepDeg - 90) * Math.PI / 180
+      const elapsed = (ts - startRef.current) / 1000
 
       ctx.clearRect(0, 0, W, H)
 
-      /* ── Dark circular background ── */
+      /* Dark circular background */
       ctx.save()
       ctx.beginPath()
-      ctx.arc(CX, CY, R + 30, 0, Math.PI * 2)
+      ctx.arc(CX, CY, BG_R, 0, Math.PI * 2)
       ctx.fillStyle = '#06071A'
       ctx.fill()
       ctx.restore()
 
-      /* ── Concentric rings ── */
-      for (let i = 1; i <= 4; i++) {
+      /* Orbital rings */
+      ctx.setLineDash([3, 9])
+      for (const p of PLANETS) {
         ctx.beginPath()
-        ctx.arc(CX, CY, R * i / 4, 0, Math.PI * 2)
-        ctx.strokeStyle = 'rgba(255,255,255,0.08)'
-        ctx.setLineDash(i < 4 ? [3, 7] : [])
-        ctx.lineWidth = i === 4 ? 1 : 0.75
+        ctx.arc(CX, CY, p.r, 0, Math.PI * 2)
+        ctx.strokeStyle = 'rgba(255,255,255,0.07)'
+        ctx.lineWidth = 1
         ctx.stroke()
       }
       ctx.setLineDash([])
 
-      /* ── Sweep trail: fan of fading lines ── */
-      for (let step = 0; step <= TRAIL_DEG; step += 2) {
-        const t   = 1 - step / TRAIL_DEG
-        const ang = sweepRad - step * Math.PI / 180
-        const x0  = CX + R * 0.08 * Math.cos(ang)
-        const y0  = CY + R * 0.08 * Math.sin(ang)
-        const x1  = CX + R * Math.cos(ang)
-        const y1  = CY + R * Math.sin(ang)
-        ctx.beginPath()
-        ctx.moveTo(x0, y0)
-        ctx.lineTo(x1, y1)
-        ctx.strokeStyle = `rgba(11,179,164,${(t * t * 0.22).toFixed(3)})`
-        ctx.lineWidth   = 1.5
-        ctx.stroke()
-      }
-
-      /* ── Sweep line ── */
-      const sxEnd = CX + R * Math.cos(sweepRad)
-      const syEnd = CY + R * Math.sin(sweepRad)
-      const lineGrad = ctx.createLinearGradient(CX, CY, sxEnd, syEnd)
-      lineGrad.addColorStop(0, 'rgba(11,179,164,0.1)')
-      lineGrad.addColorStop(1, 'rgba(11,179,164,0.95)')
+      /* Central star */
+      const pulse = 0.5 + 0.5 * Math.sin(ts * 0.0022)
       ctx.beginPath()
-      ctx.moveTo(CX, CY)
-      ctx.lineTo(sxEnd, syEnd)
-      ctx.strokeStyle = lineGrad
-      ctx.lineWidth   = 2
+      ctx.arc(CX, CY, 11 + pulse * 5, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(11,179,164,0.1)'
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(CX, CY, 7 + pulse * 2, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(11,179,164,0.2)'
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(CX, CY, 5, 0, Math.PI * 2)
+      ctx.fillStyle = '#0BB3A4'
       ctx.shadowColor = '#0BB3A4'
-      ctx.shadowBlur  = 10
-      ctx.stroke()
-      ctx.shadowBlur  = 0
+      ctx.shadowBlur = 18
+      ctx.fill()
+      ctx.shadowBlur = 0
 
-      /* ── Axes + dots + labels ── */
-      for (const axis of AXES) {
-        const axRad = (axis.angle - 90) * Math.PI / 180
+      /* Planets */
+      for (const p of PLANETS) {
+        const rad  = ((p.startAngle + elapsed * p.angSpeed) % 360 - 90) * (Math.PI / 180)
+        const px   = CX + p.r * Math.cos(rad)
+        const py   = CY + p.r * Math.sin(rad)
 
-        /* Angular distance behind sweep (0 = just hit, TRAIL_DEG = about to leave) */
-        const diff = (sweepDeg - axis.angle + 360) % 360
-        const fade = diff < TRAIL_DEG ? 1 - diff / TRAIL_DEG : 0
-        const active = fade > 0
-
-        /* Axis line */
-        ctx.save()
-        const extR = active ? R * (1 + fade * 0.08) : R
+        /* Atmosphere glow */
         ctx.beginPath()
-        ctx.moveTo(CX, CY)
-        ctx.lineTo(CX + extR * Math.cos(axRad), CY + extR * Math.sin(axRad))
-        ctx.strokeStyle = active ? axis.color : 'rgba(255,255,255,0.06)'
-        ctx.globalAlpha = active ? 0.12 + fade * 0.55 : 1
-        ctx.lineWidth   = active ? 1.5 : 0.7
-        if (active) {
-          ctx.shadowColor = axis.color
-          ctx.shadowBlur  = 6
-        }
-        ctx.stroke()
-        ctx.shadowBlur  = 0
-        ctx.restore()
+        ctx.arc(px, py, p.size + 5, 0, Math.PI * 2)
+        ctx.fillStyle = p.color
+        ctx.globalAlpha = 0.13
+        ctx.fill()
+        ctx.globalAlpha = 1
 
-        /* Dot at 72% radius */
-        const dotR = R * 0.72
-        const dotX = CX + dotR * Math.cos(axRad)
-        const dotY = CY + dotR * Math.sin(axRad)
-        const dotSize = active ? 3 + fade * 6 : 3
-
-        /* Glow ring when active */
-        if (active) {
-          ctx.beginPath()
-          ctx.arc(dotX, dotY, dotSize + 5, 0, Math.PI * 2)
-          ctx.fillStyle = axis.color
-          ctx.globalAlpha = fade * 0.18
-          ctx.fill()
-          ctx.globalAlpha = 1
-        }
-
-        /* Dot */
+        /* Planet */
         ctx.beginPath()
-        ctx.arc(dotX, dotY, dotSize, 0, Math.PI * 2)
-        ctx.fillStyle = active ? axis.color : 'rgba(255,255,255,0.3)'
-        if (active) {
-          ctx.shadowColor = axis.color
-          ctx.shadowBlur  = 14
-        }
+        ctx.arc(px, py, p.size, 0, Math.PI * 2)
+        ctx.fillStyle = p.color
+        ctx.shadowColor = p.color
+        ctx.shadowBlur = 12
         ctx.fill()
         ctx.shadowBlur = 0
 
-        /* Small dots along axis at 35% and 55% */
-        for (const pct of [0.35, 0.55]) {
-          const px = CX + R * pct * Math.cos(axRad)
-          const py = CY + R * pct * Math.sin(axRad)
-          ctx.beginPath()
-          ctx.arc(px, py, active ? 2 + fade * 1.5 : 2, 0, Math.PI * 2)
-          ctx.fillStyle = active ? axis.color : 'rgba(255,255,255,0.2)'
-          ctx.globalAlpha = active ? 0.4 + fade * 0.5 : 0.4
-          ctx.fill()
-          ctx.globalAlpha = 1
-        }
+        /* Label — offset outward from center, always horizontal */
+        const dx  = px - CX
+        const dy  = py - CY
+        const len = Math.sqrt(dx * dx + dy * dy) || 1
+        const nx  = dx / len
+        const ny  = dy / len
+        const lx  = px + nx * (p.size + 11)
+        const ly  = py + ny * (p.size + 11)
 
-        /* Label */
-        if (active && fade > 0.05) {
-          const labelDist = R + 26
-          const lx = CX + labelDist * Math.cos(axRad)
-          const ly = CY + labelDist * Math.sin(axRad)
-
-          ctx.save()
-          ctx.font         = '500 11px Poppins, sans-serif'
-          ctx.fillStyle    = axis.color
-          ctx.globalAlpha  = Math.min(1, fade * 2.5)
-          ctx.textAlign    = lx > CX + 8 ? 'left' : lx < CX - 8 ? 'right' : 'center'
-          ctx.textBaseline = ly > CY + 8 ? 'top' : ly < CY - 8 ? 'bottom' : 'middle'
-          ctx.shadowColor  = axis.color
-          ctx.shadowBlur   = 8
-          ctx.fillText(axis.label, lx, ly)
-          ctx.restore()
-        }
+        ctx.font         = '500 10.5px Poppins, sans-serif'
+        ctx.fillStyle    = p.color
+        ctx.globalAlpha  = 0.88
+        ctx.textAlign    = lx > CX + 6 ? 'left' : lx < CX - 6 ? 'right' : 'center'
+        ctx.textBaseline = ly > CY + 6 ? 'top'  : ly < CY - 6 ? 'bottom' : 'middle'
+        ctx.shadowColor  = p.color
+        ctx.shadowBlur   = 5
+        ctx.fillText(p.label, lx, ly)
+        ctx.shadowBlur   = 0
+        ctx.globalAlpha  = 1
       }
-
-      /* ── Tick marks on outer ring ── */
-      for (let i = 0; i < 20; i++) {
-        const tickRad = (i * 18 - 90) * Math.PI / 180
-        const x1 = CX + (R + 4)  * Math.cos(tickRad)
-        const y1 = CY + (R + 4)  * Math.sin(tickRad)
-        const x2 = CX + (R + 10) * Math.cos(tickRad)
-        const y2 = CY + (R + 10) * Math.sin(tickRad)
-        ctx.beginPath()
-        ctx.moveTo(x1, y1)
-        ctx.lineTo(x2, y2)
-        ctx.strokeStyle = 'rgba(255,255,255,0.12)'
-        ctx.lineWidth   = 1
-        ctx.stroke()
-      }
-
-      /* ── Center dot ── */
-      const pulse = 0.5 + 0.5 * Math.sin(ts * 0.003)
-      ctx.beginPath()
-      ctx.arc(CX, CY, 5 + pulse * 3, 0, Math.PI * 2)
-      ctx.fillStyle   = '#0BB3A4'
-      ctx.globalAlpha = 0.15 + pulse * 0.1
-      ctx.fill()
-      ctx.globalAlpha = 1
-      ctx.beginPath()
-      ctx.arc(CX, CY, 4, 0, Math.PI * 2)
-      ctx.fillStyle   = '#0BB3A4'
-      ctx.shadowColor = '#0BB3A4'
-      ctx.shadowBlur  = 12
-      ctx.fill()
-      ctx.shadowBlur  = 0
 
       rafRef.current = requestAnimationFrame(draw)
     }
@@ -214,10 +125,10 @@ function RadarCanvas() {
   return (
     <canvas
       ref={canvasRef}
-      width={420}
-      height={420}
+      width={460}
+      height={460}
       data-no-transition
-      style={{ width: '100%', maxWidth: '460px', display: 'block', margin: '0 auto' }}
+      style={{ width: '100%', maxWidth: '500px', display: 'block', margin: '0 auto' }}
     />
   )
 }
@@ -236,9 +147,9 @@ export default function CTA() {
           scrollTrigger: { trigger: sectionRef.current, start: 'top 68%' } }
       )
       gsap.fromTo(rightRef.current,
-        { scale: 0.88, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.85, ease: 'power3.out',
-          scrollTrigger: { trigger: sectionRef.current, start: 'top 68%' }, delay: 0.15 }
+        { scale: 0.9, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: sectionRef.current, start: 'top 68%' }, delay: 0.12 }
       )
     }, sectionRef)
     return () => ctx.revert()
@@ -279,8 +190,7 @@ export default function CTA() {
             <em style={{ fontStyle: 'italic', color: '#0BB3A4', fontWeight: 600 }}>
               frenando
             </em>
-            {' '}a tu equipo —{' '}
-            en 30 minutos.
+            {' '}a tu equipo — en 30 minutos.
           </h2>
 
           <p style={{
@@ -336,9 +246,9 @@ export default function CTA() {
           </div>
         </div>
 
-        {/* ── Right: animated radar ── */}
+        {/* ── Right: solar system ── */}
         <div ref={rightRef} style={{ opacity: 0 }}>
-          <RadarCanvas />
+          <SolarSystemCanvas />
         </div>
 
       </div>
