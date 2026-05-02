@@ -247,7 +247,7 @@ export default function SocialProof() {
           display: 'flex', gap: '8px',
           flexWrap: 'wrap', alignItems: 'center',
         }}>
-          {CLIENTS.map((name, i) => {
+          {CLIENTS.map((name) => {
             const isActive = TESTIMONIALS[active]?.company === name
             return (
               <button
