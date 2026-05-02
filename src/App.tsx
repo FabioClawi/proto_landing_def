@@ -1,7 +1,8 @@
 import './index.css'
 import Nav  from './components/Nav'
 import Hero from './sections/Hero'
-import Pain from './sections/Pain'
+import Pain     from './sections/Pain'
+import Solution from './sections/Solution'
 import { useTheme } from './hooks/useTheme'
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
       <Nav />
       <Hero />
       <Pain />
+      <Solution />
 
       {/* Placeholder — remaining sections coming soon */}
       <div style={{
