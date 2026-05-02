@@ -1,19 +1,29 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const CHIPS: { label: string; highlight?: boolean }[] = [
-  { label: 'Excel desaprovechado', highlight: true },
-  { label: 'Procesos 100% manuales' },
-  { label: 'Sin adopción de IA' },
-  { label: 'Datos desordenados' },
-  { label: 'Resistencia al cambio' },
-  { label: 'Capacitaciones que no aplican' },
-  { label: 'Sin tiempo para aprender' },
-  { label: 'Herramientas sin uso' },
-  { label: 'Reuniones interminables' },
+const CHIPS = [
+  'Excel manual',
+  'Sin IA',
+  'Datos caóticos',
+  'Sin tiempo',
+  'Procesos lentos',
+  'Resistencia digital',
+  'Sin resultados',
+  'Capacitación genérica',
+  'Herramientas sin uso',
+  'Reuniones infinitas',
+]
+
+/* Highlight colors that cycle with each active chip */
+const COLORS = [
+  { bg: '#0BB3A4', text: '#000050', glow: 'rgba(11,179,164,0.45)' },
+  { bg: '#FFA07A', text: '#2A0A00', glow: 'rgba(255,160,122,0.45)' },
+  { bg: '#75C1E7', text: '#000050', glow: 'rgba(117,193,231,0.45)' },
+  { bg: '#B39DDB', text: '#1A0038', glow: 'rgba(179,157,219,0.45)' },
+  { bg: '#6BCB77', text: '#002010', glow: 'rgba(107,203,119,0.45)' },
 ]
 
 export default function Pain() {
@@ -22,32 +32,41 @@ export default function Pain() {
   const rightRef   = useRef<HTMLDivElement>(null)
   const chipsRef   = useRef<HTMLDivElement>(null)
 
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [colorIdx,  setColorIdx]  = useState(0)
+
+  /* Cycle active chip + color */
+  useEffect(() => {
+    const id = setInterval(() => {
+      setActiveIdx(i => (i + 1) % CHIPS.length)
+      setColorIdx(c => (c + 1) % COLORS.length)
+    }, 1800)
+    return () => clearInterval(id)
+  }, [])
+
+  /* Entry animations */
   useEffect(() => {
     const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: 'top 68%',
-      },
+      scrollTrigger: { trigger: sectionRef.current, start: 'top 68%' },
     })
 
     tl.fromTo(leftRef.current,
       { x: -40, opacity: 0 },
       { x: 0, opacity: 1, duration: 0.75, ease: 'power3.out' }
-    )
-    .fromTo(rightRef.current,
+    ).fromTo(rightRef.current,
       { x: 40, opacity: 0 },
       { x: 0, opacity: 1, duration: 0.75, ease: 'power3.out' },
       '-=0.55'
     )
 
     if (chipsRef.current) {
-      const chips = chipsRef.current.querySelectorAll<HTMLElement>('[data-chip]')
-      gsap.fromTo(chips,
+      gsap.fromTo(
+        chipsRef.current.querySelectorAll<HTMLElement>('[data-chip]'),
         { y: 14, opacity: 0 },
         {
-          y: 0, opacity: 1, stagger: 0.06, duration: 0.35, ease: 'power2.out',
+          y: 0, opacity: 1, stagger: 0.055, duration: 0.3, ease: 'power2.out',
           scrollTrigger: { trigger: chipsRef.current, start: 'top 75%' },
-          delay: 0.2,
+          delay: 0.25,
         }
       )
     }
@@ -55,14 +74,12 @@ export default function Pain() {
     return () => { ScrollTrigger.getAll().forEach(t => t.kill()) }
   }, [])
 
+  const activeColor = COLORS[colorIdx]
+
   return (
     <section
       ref={sectionRef}
-      style={{
-        background: 'var(--bg)',
-        padding: '120px 0',
-        transition: 'background 0.3s ease',
-      }}
+      style={{ background: 'var(--bg)', padding: '120px 0', transition: 'background 0.3s ease' }}
     >
       <div style={{
         maxWidth: '1100px',
@@ -76,41 +93,30 @@ export default function Pain() {
 
         {/* ── Left ── */}
         <div ref={leftRef} style={{ opacity: 0 }}>
-          {/* Eyebrow */}
           <p style={{
             fontFamily: 'Poppins, sans-serif',
-            fontSize: '11px',
-            fontWeight: 500,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: '#0BB3A4',
-            marginBottom: '24px',
+            fontSize: '11px', fontWeight: 500,
+            letterSpacing: '0.14em', textTransform: 'uppercase',
+            color: '#0BB3A4', marginBottom: '24px',
           }}>
             Reconocemos el problema
           </p>
 
-          {/* Headline */}
           <h2 style={{
             fontFamily: 'Poppins, sans-serif',
             fontWeight: 600,
             fontSize: 'clamp(2.4rem, 4.2vw, 3.8rem)',
-            lineHeight: 1.1,
-            letterSpacing: '-0.02em',
-            color: 'var(--text-heading)',
-            marginBottom: '28px',
+            lineHeight: 1.1, letterSpacing: '-0.02em',
+            color: 'var(--text-heading)', marginBottom: '28px',
           }}>
             Mucho trabajo.<br />
             Pocas herramientas.
           </h2>
 
-          {/* Body */}
           <p style={{
             fontFamily: 'Poppins, sans-serif',
-            fontSize: '15px',
-            fontWeight: 400,
-            lineHeight: 1.75,
-            color: 'var(--text-muted)',
-            maxWidth: '420px',
+            fontSize: '15px', fontWeight: 400,
+            lineHeight: 1.75, color: 'var(--text-muted)', maxWidth: '420px',
           }}>
             Las PyMEs de Latam tienen equipos con talento, pero sin las herramientas
             ni el conocimiento para aprovechar la tecnología disponible. No es falta
@@ -123,71 +129,43 @@ export default function Pain() {
           <div style={{
             background: '#06071A',
             borderRadius: '20px',
-            padding: '36px',
+            padding: '28px 32px 32px',
             border: '1px solid rgba(255,255,255,0.06)',
             boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
           }}>
-            {/* Card header */}
             <p style={{
               fontFamily: 'Poppins, sans-serif',
-              fontSize: '15px',
-              fontWeight: 500,
-              color: '#ffffff',
-              marginBottom: '24px',
-              lineHeight: 1.4,
+              fontSize: '14px', fontWeight: 500,
+              color: 'rgba(255,255,255,0.7)', marginBottom: '20px', lineHeight: 1.4,
             }}>
               Lo que escuchamos de equipos como el tuyo:
             </p>
 
-            {/* Chips */}
-            <div
-              ref={chipsRef}
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '10px',
-              }}
-            >
-              {CHIPS.map(chip => (
-                <span
-                  key={chip.label}
-                  data-chip
-                  style={{
-                    display: 'inline-block',
-                    padding: '8px 16px',
-                    borderRadius: '9999px',
-                    fontFamily: 'Poppins, sans-serif',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    cursor: 'default',
-                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                    ...(chip.highlight
-                      ? {
-                          background: '#0BB3A4',
-                          color: '#000050',
-                          border: '1.5px solid #0BB3A4',
-                          boxShadow: '0 0 16px rgba(11,179,164,0.35)',
-                        }
-                      : {
-                          background: 'transparent',
-                          color: 'rgba(255,255,255,0.75)',
-                          border: '1.5px solid rgba(255,255,255,0.15)',
-                        }),
-                  }}
-                  onMouseEnter={e => {
-                    const el = e.currentTarget as HTMLSpanElement
-                    el.style.transform = 'translateY(-2px)'
-                    if (!chip.highlight) el.style.borderColor = 'rgba(11,179,164,0.5)'
-                  }}
-                  onMouseLeave={e => {
-                    const el = e.currentTarget as HTMLSpanElement
-                    el.style.transform = 'translateY(0)'
-                    if (!chip.highlight) el.style.borderColor = 'rgba(255,255,255,0.15)'
-                  }}
-                >
-                  {chip.label}
-                </span>
-              ))}
+            <div ref={chipsRef} style={{ display: 'flex', flexWrap: 'wrap', gap: '9px' }}>
+              {CHIPS.map((label, idx) => {
+                const isActive = idx === activeIdx
+                return (
+                  <span
+                    key={label}
+                    data-chip
+                    style={{
+                      display: 'inline-block',
+                      padding: '7px 15px',
+                      borderRadius: '9999px',
+                      fontFamily: 'Poppins, sans-serif',
+                      fontSize: '12px', fontWeight: 500,
+                      cursor: 'default',
+                      transition: 'background 0.45s ease, border-color 0.45s ease, color 0.45s ease, box-shadow 0.45s ease',
+                      background:   isActive ? activeColor.bg        : 'transparent',
+                      color:        isActive ? activeColor.text      : 'rgba(255,255,255,0.65)',
+                      border:      `1.5px solid ${isActive ? activeColor.bg : 'rgba(255,255,255,0.14)'}`,
+                      boxShadow:    isActive ? `0 0 18px ${activeColor.glow}` : 'none',
+                    }}
+                  >
+                    {label}
+                  </span>
+                )
+              })}
             </div>
           </div>
         </div>
