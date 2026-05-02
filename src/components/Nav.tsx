@@ -1,7 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { gsap } from 'gsap'
 import { useTheme } from '../hooks/useTheme'
-import logoTeal from '../assets/logo-full-teal.svg'
 
 /* ─── Content config ─── */
 const MEGA_COLUMNS = [
@@ -138,18 +137,21 @@ export default function Nav() {
         transition: 'padding 0.3s ease',
       }}>
 
-        {/* Logo */}
-        <a href="#" style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          <img
-            src={logoTeal}
-            alt="Sincero"
-            style={{
-              height: scrolled ? '28px' : '32px',
-              width: 'auto',
-              transition: 'height 0.3s ease',
-              objectFit: 'contain',
-            }}
-          />
+        {/* Wordmark */}
+        <a href="#" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
+          <span style={{
+            fontFamily: 'Poppins, sans-serif',
+            fontWeight: 600,
+            fontSize: scrolled ? '17px' : '20px',
+            color: '#0BB3A4',
+            letterSpacing: '0.18em',
+            fontVariantNumeric: 'slashed-zero',
+            fontFeatureSettings: '"zero" 1',
+            transition: 'font-size 0.3s ease',
+            userSelect: 'none',
+          }}>
+            SINCER0
+          </span>
         </a>
 
         {/* Links */}
