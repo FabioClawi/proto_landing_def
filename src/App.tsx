@@ -1,6 +1,7 @@
 import './index.css'
 import Nav  from './components/Nav'
 import Hero from './sections/Hero'
+import Pain from './sections/Pain'
 import { useTheme } from './hooks/useTheme'
 
 export default function App() {
@@ -10,19 +11,19 @@ export default function App() {
     <main style={{ background: 'var(--bg)', minHeight: '100vh', transition: 'background 0.3s ease' }}>
       <Nav />
       <Hero />
+      <Pain />
 
-      {/* Placeholder body — will be replaced by sections */}
+      {/* Placeholder — remaining sections coming soon */}
       <div style={{
-        height: '200vh',
+        height: '60vh',
         background: 'var(--bg)',
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: '80px',
         transition: 'background 0.3s ease',
       }}>
         <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontFamily: 'Poppins, sans-serif' }}>
-          Tema activo: <strong style={{ color: 'var(--text-heading)' }}>{theme}</strong>
+          Tema: <strong style={{ color: 'var(--text-heading)' }}>{theme}</strong>
         </span>
       </div>
     </main>
