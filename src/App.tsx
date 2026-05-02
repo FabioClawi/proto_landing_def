@@ -1,46 +1,45 @@
 import './index.css'
+import Nav from './components/Nav'
 import { useTheme } from './hooks/useTheme'
 
 export default function App() {
-  const { theme, toggle, isDark } = useTheme()
+  const { theme } = useTheme()
 
   return (
-    <main>
-      {/* Temporary theme preview — will be replaced by sections */}
+    <main style={{ background: 'var(--bg)', minHeight: '300vh', transition: 'background 0.3s ease' }}>
+      <Nav />
+
+      {/* Placeholder hero — dark section so nav reads correctly over it */}
       <div style={{
+        height: '100vh',
+        background: '#000050',
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '24px',
-        height: '100vh',
-        fontFamily: 'Poppins, sans-serif',
-        backgroundColor: 'var(--bg)',
-        transition: 'background-color 0.3s ease',
+        flexDirection: 'column',
+        gap: '16px',
       }}>
-        <span style={{ color: '#0BB3A4', fontSize: '2rem', letterSpacing: '0.3em', fontWeight: 600 }}>
+        <span style={{ color: '#0BB3A4', fontSize: '3rem', fontWeight: 600, letterSpacing: '0.2em' }}>
           SINCERO
         </span>
-        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-          Tema actual: <strong style={{ color: 'var(--text-heading)' }}>{theme}</strong>
+        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.875rem' }}>
+          Hero section — próximamente
         </span>
-        <button
-          onClick={toggle}
-          style={{
-            padding: '10px 24px',
-            borderRadius: '10px',
-            border: '1.5px solid #0BB3A4',
-            background: 'transparent',
-            color: '#0BB3A4',
-            fontFamily: 'Poppins, sans-serif',
-            fontSize: '0.8rem',
-            fontWeight: 500,
-            cursor: 'pointer',
-            letterSpacing: '0.05em',
-          }}
-        >
-          {isDark ? '☀ Modo claro' : '☾ Modo oscuro'}
-        </button>
+      </div>
+
+      {/* Placeholder body — shows theme switching on light/dark */}
+      <div style={{
+        height: '200vh',
+        background: 'var(--bg)',
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        paddingTop: '80px',
+        transition: 'background 0.3s ease',
+      }}>
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+          Tema activo: <strong style={{ color: 'var(--text-heading)' }}>{theme}</strong> — scroll para ver la nav compactarse
+        </span>
       </div>
     </main>
   )
