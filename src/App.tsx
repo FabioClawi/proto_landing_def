@@ -1,39 +1,34 @@
+import { useCallback, useState } from 'react'
 import './index.css'
-import Nav  from './components/Nav'
-import Hero from './sections/Hero'
-import Pain     from './sections/Pain'
-import Solution from './sections/Solution'
-import CTA         from './sections/CTA'
-import SocialProof from './sections/SocialProof'
-import Footer      from './sections/Footer'
-import { useTheme } from './hooks/useTheme'
+import IntroAnimation from './components/IntroAnimation'
+import Nav            from './components/Nav'
+import Hero           from './sections/Hero'
+import Pain           from './sections/Pain'
+import Solution       from './sections/Solution'
+import CTA            from './sections/CTA'
+import SocialProof    from './sections/SocialProof'
+import Footer         from './sections/Footer'
 
 export default function App() {
-  const { theme } = useTheme()
+  const [introDone, setIntroDone] = useState(false)
+
+  const handleIntroComplete = useCallback(() => {
+    setIntroDone(true)
+  }, [])
 
   return (
-    <main style={{ background: 'var(--bg)', minHeight: '100vh', transition: 'background 0.3s ease' }}>
-      <Nav />
-      <Hero />
-      <Pain />
-      <Solution />
-      <CTA />
-      <SocialProof />
-      <Footer />
+    <>
+      {!introDone && <IntroAnimation onComplete={handleIntroComplete} />}
 
-      {/* Placeholder — remaining sections coming soon */}
-      <div style={{
-        height: '60vh',
-        background: 'var(--bg)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'background 0.3s ease',
-      }}>
-        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontFamily: 'Poppins, sans-serif' }}>
-          Tema: <strong style={{ color: 'var(--text-heading)' }}>{theme}</strong>
-        </span>
-      </div>
-    </main>
+      <main style={{ background: 'var(--bg)', minHeight: '100vh', transition: 'background 0.3s ease' }}>
+        <Nav />
+        <Hero />
+        <Pain />
+        <Solution />
+        <CTA />
+        <SocialProof />
+        <Footer />
+      </main>
+    </>
   )
 }
