@@ -3,6 +3,7 @@ import Nav  from './components/Nav'
 import Hero from './sections/Hero'
 import Pain     from './sections/Pain'
 import Solution from './sections/Solution'
+import CTA      from './sections/CTA'
 import { useTheme } from './hooks/useTheme'
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
       <Hero />
       <Pain />
       <Solution />
+      <CTA />
 
       {/* Placeholder — remaining sections coming soon */}
       <div style={{
