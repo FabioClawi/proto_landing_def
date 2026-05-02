@@ -6,6 +6,7 @@ import { useTheme } from '../hooks/useTheme'
 type Column = {
   title: string
   icon: string
+  color: string   // distinct accent per column
   items: { name: string; desc: string }[]
 }
 type NavLink = {
@@ -21,7 +22,7 @@ const NAV_LINKS: NavLink[] = [
     footerLabel: 'Ver todos los servicios →',
     columns: [
       {
-        title: 'Capacitación', icon: '⚡',
+        title: 'Capacitación', icon: '⚡', color: '#0BB3A4',
         items: [
           { name: 'Excel Empresarial',      desc: 'Desde básico hasta Power BI' },
           { name: 'IA para Negocios',       desc: 'ChatGPT, Copilot y automatización' },
@@ -29,7 +30,7 @@ const NAV_LINKS: NavLink[] = [
         ],
       },
       {
-        title: 'Consultoría', icon: '◎',
+        title: 'Consultoría', icon: '✳', color: '#FFA07A',
         items: [
           { name: 'Diagnóstico Digital', desc: 'Evaluamos el estado de tu empresa' },
           { name: 'Hoja de Ruta',        desc: 'Plan de transformación a tu medida' },
@@ -37,7 +38,7 @@ const NAV_LINKS: NavLink[] = [
         ],
       },
       {
-        title: 'Formatos', icon: '▣',
+        title: 'Formatos', icon: '▦', color: '#75C1E7',
         items: [
           { name: 'Talleres en Vivo', desc: 'Sesiones grupales interactivas' },
           { name: 'E-learning',       desc: 'Aprende a tu propio ritmo' },
@@ -45,7 +46,7 @@ const NAV_LINKS: NavLink[] = [
         ],
       },
       {
-        title: 'Recursos', icon: '✦',
+        title: 'Recursos', icon: '✦', color: '#B39DDB',
         items: [
           { name: 'Blog',               desc: 'Artículos y guías prácticas' },
           { name: 'Casos de Éxito',     desc: 'Resultados de nuestros clientes' },
@@ -59,7 +60,7 @@ const NAV_LINKS: NavLink[] = [
     footerLabel: 'Conocer el proceso completo →',
     columns: [
       {
-        title: 'Cómo Trabajamos', icon: '◈',
+        title: 'Cómo Trabajamos', icon: '◈', color: '#0BB3A4',
         items: [
           { name: 'Diagnóstico Inicial', desc: 'Mapeamos las habilidades del equipo' },
           { name: 'Plan Personalizado',  desc: 'Programa diseñado para tu empresa' },
@@ -67,11 +68,11 @@ const NAV_LINKS: NavLink[] = [
         ],
       },
       {
-        title: 'Resultados', icon: '↗',
+        title: 'Resultados', icon: '↗', color: '#FFA07A',
         items: [
-          { name: 'Seguimiento',     desc: 'Medimos el progreso en tiempo real' },
-          { name: 'Certificación',   desc: 'Evidencia del aprendizaje logrado' },
-          { name: 'Optimización',    desc: 'Ajustes continuos según resultados' },
+          { name: 'Seguimiento',    desc: 'Medimos el progreso en tiempo real' },
+          { name: 'Certificación',  desc: 'Evidencia del aprendizaje logrado' },
+          { name: 'Optimización',   desc: 'Ajustes continuos según resultados' },
         ],
       },
     ],
@@ -81,7 +82,7 @@ const NAV_LINKS: NavLink[] = [
     footerLabel: 'Ver todos los casos de éxito →',
     columns: [
       {
-        title: 'Sectores', icon: '◉',
+        title: 'Sectores', icon: '◉', color: '#75C1E7',
         items: [
           { name: 'Retail y Comercio',       desc: 'PyMEs con equipos de ventas y ops' },
           { name: 'Servicios Profesionales', desc: 'Consultoras, agencias, estudios' },
@@ -89,10 +90,10 @@ const NAV_LINKS: NavLink[] = [
         ],
       },
       {
-        title: 'Resultados', icon: '★',
+        title: 'Resultados', icon: '★', color: '#B39DDB',
         items: [
-          { name: 'Casos de Éxito',    desc: 'Historias reales de transformación' },
-          { name: 'Testimonios',       desc: 'Lo que dicen nuestros clientes' },
+          { name: 'Casos de Éxito',     desc: 'Historias reales de transformación' },
+          { name: 'Testimonios',        desc: 'Lo que dicen nuestros clientes' },
           { name: 'Impacto en Números', desc: 'Métricas de nuestros programas' },
         ],
       },
@@ -103,7 +104,7 @@ const NAV_LINKS: NavLink[] = [
     footerLabel: 'Conocer más sobre Sincero →',
     columns: [
       {
-        title: 'Quiénes Somos', icon: '◐',
+        title: 'Quiénes Somos', icon: '◐', color: '#FFA07A',
         items: [
           { name: 'Nuestra Misión', desc: 'Por qué existe Sincero' },
           { name: 'El Equipo',      desc: 'Las personas detrás del proyecto' },
@@ -111,11 +112,11 @@ const NAV_LINKS: NavLink[] = [
         ],
       },
       {
-        title: 'Conecta', icon: '→',
+        title: 'Conecta', icon: '→', color: '#0BB3A4',
         items: [
-          { name: 'Blog',                  desc: 'Artículos y guías prácticas' },
-          { name: 'Contacto',              desc: 'Hablemos de tu empresa' },
-          { name: 'Trabaja con Nosotros',  desc: 'Únete al equipo Sincero' },
+          { name: 'Blog',                 desc: 'Artículos y guías prácticas' },
+          { name: 'Contacto',             desc: 'Hablemos de tu empresa' },
+          { name: 'Trabaja con Nosotros', desc: 'Únete al equipo Sincero' },
         ],
       },
     ],
@@ -380,19 +381,30 @@ export default function Nav() {
                       ? '1px solid rgba(255,255,255,0.06)' : 'none',
                   }}
                 >
-                  {/* Column header */}
+                  {/* Column header — distinct color per column, icon same color */}
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    marginBottom: '14px',
-                    paddingBottom: '10px',
-                    borderBottom: '1px solid rgba(255,255,255,0.07)',
+                    marginBottom: '20px',
                   }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff', letterSpacing: '0.04em' }}>
+                    <span style={{
+                      fontSize: '15px',
+                      fontWeight: 600,
+                      color: col.color,
+                      letterSpacing: '0.01em',
+                      lineHeight: 1.2,
+                    }}>
                       {col.title}
                     </span>
-                    <span style={{ fontSize: '14px', opacity: 0.35 }}>{col.icon}</span>
+                    <span style={{
+                      fontSize: '18px',
+                      color: col.color,
+                      opacity: 0.7,
+                      lineHeight: 1,
+                    }}>
+                      {col.icon}
+                    </span>
                   </div>
 
                   {/* Items */}
