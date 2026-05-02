@@ -35,11 +35,19 @@ export default function Pain() {
   const [activeIdx, setActiveIdx] = useState(0)
   const [colorIdx,  setColorIdx]  = useState(0)
 
-  /* Cycle active chip + color */
+  /* Cycle active chip pseudo-randomly (never repeats same index twice) */
   useEffect(() => {
     const id = setInterval(() => {
-      setActiveIdx(i => (i + 1) % CHIPS.length)
-      setColorIdx(c => (c + 1) % COLORS.length)
+      setActiveIdx(prev => {
+        let next
+        do { next = Math.floor(Math.random() * CHIPS.length) } while (next === prev)
+        return next
+      })
+      setColorIdx(prev => {
+        let next
+        do { next = Math.floor(Math.random() * COLORS.length) } while (next === prev)
+        return next
+      })
     }, 1800)
     return () => clearInterval(id)
   }, [])
