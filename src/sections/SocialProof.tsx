@@ -9,7 +9,7 @@ const TESTIMONIALS = [
     quote: 'En menos de 3 meses, nuestro equipo pasó de usar Excel básico a automatizar reportes que antes tomaban días enteros. Sincero transformó nuestra forma de trabajar.',
     name:  'María González',
     role:  'Gerente de Operaciones',
-    company: 'RetailCo',
+    company: 'PEMEX',
     initials: 'MG',
     color:  '#0BB3A4',
   },
@@ -17,7 +17,7 @@ const TESTIMONIALS = [
     quote: 'Lo que más valoramos fue que el programa fue 100% a medida. No teoría genérica — ejercicios reales con nuestros datos y los procesos del día a día.',
     name:  'Carlos Méndez',
     role:  'CEO',
-    company: 'Andes Corp',
+    company: 'PayJoy',
     initials: 'CM',
     color:  '#75C1E7',
   },
@@ -40,7 +40,7 @@ const TESTIMONIALS = [
 ]
 
 const CLIENTS = [
-  'RetailCo', 'Andes Corp', 'IndusMX', 'TechPyME', 'GrupoNorte', 'DataSur',
+  'PEMEX', 'PayJoy', 'IndusMX', 'TechPyME', 'GrupoNorte',
 ]
 
 export default function SocialProof() {
@@ -129,62 +129,6 @@ export default function SocialProof() {
             position: 'relative',
           }}
         >
-          {/* Arrows — top right */}
-          <div style={{
-            position: 'absolute', top: '32px', right: '48px',
-            display: 'flex', gap: '8px',
-          }}>
-            <button
-              onClick={() => advance(-1)}
-              style={{
-                width: '36px', height: '36px', borderRadius: '9999px',
-                background: 'transparent',
-                border: '1.5px solid rgba(255,255,255,0.15)',
-                color: 'rgba(255,255,255,0.5)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', fontSize: '14px',
-                transition: 'border-color 0.2s ease, color 0.2s ease',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLButtonElement
-                el.style.borderColor = 'rgba(255,255,255,0.35)'
-                el.style.color = '#ffffff'
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLButtonElement
-                el.style.borderColor = 'rgba(255,255,255,0.15)'
-                el.style.color = 'rgba(255,255,255,0.5)'
-              }}
-            >
-              ←
-            </button>
-            <button
-              onClick={() => advance(1)}
-              style={{
-                width: '36px', height: '36px', borderRadius: '9999px',
-                background: '#0BB3A4',
-                border: '1.5px solid #0BB3A4',
-                color: '#000050',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', fontSize: '14px', fontWeight: 600,
-                transition: 'background 0.2s ease, box-shadow 0.2s ease',
-                boxShadow: '0 0 12px rgba(11,179,164,0.35)',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLButtonElement
-                el.style.background = '#0dcfc0'
-                el.style.boxShadow = '0 0 20px rgba(11,179,164,0.55)'
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLButtonElement
-                el.style.background = '#0BB3A4'
-                el.style.boxShadow = '0 0 12px rgba(11,179,164,0.35)'
-              }}
-            >
-              →
-            </button>
-          </div>
-
           {/* Content (animated on change) */}
           <div
             ref={contentRef}
