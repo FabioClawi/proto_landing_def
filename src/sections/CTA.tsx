@@ -1,162 +1,215 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 
-/* ─── Planets ─── */
-const PLANETS = [
-  { label: 'Excel & Datos',   color: '#0BB3A4', r: 92,  angSpeed: 68,  startAngle: 0,   size: 7   },
-  { label: 'IA Aplicada',     color: '#75C1E7', r: 152, angSpeed: 47,  startAngle: 110, size: 6.5 },
-  { label: 'Procesos',        color: '#B39DDB', r: 208, angSpeed: 30,  startAngle: 220, size: 6.5 },
-  { label: 'Herramientas',    color: '#FFA07A', r: 262, angSpeed: 18,  startAngle: 310, size: 6   },
-  { label: 'Automatización',  color: '#6BCB77', r: 316, angSpeed: 11,  startAngle: 60,  size: 6.5 },
+/* ─── Animation sequence ─── */
+const STEPS = [
+  { id: 'cmd1',  ms: 500  },
+  { id: 'sec1',  ms: 650  },
+  { id: 'bar1',  ms: 300  },
+  { id: 'st1',   ms: 380  },
+  { id: 'sec2',  ms: 650  },
+  { id: 'bar2',  ms: 300  },
+  { id: 'st2',   ms: 380  },
+  { id: 'sec3',  ms: 650  },
+  { id: 'bar3',  ms: 300  },
+  { id: 'st3',   ms: 380  },
+  { id: 'div',   ms: 550  },
+  { id: 'res1',  ms: 350  },
+  { id: 'res2',  ms: 300  },
+  { id: 'cta',   ms: 650  },
+  { id: '__end', ms: 2800 },
 ]
-const TRAIL_LEN = 22
 
-/* ─── Solar system canvas ─── */
-function SolarSystemCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rafRef    = useRef<number>(0)
-  const startRef  = useRef<number>(0)
-  const trailsRef = useRef<{x:number,y:number}[][]>(PLANETS.map(() => []))
+const MODULES = [
+  { sec: 'sec1', bar: 'bar1', st: 'st1', title: 'Módulo 1 — Excel & Datos',           pct: 62, barColor: '#FFA07A', statusText: '⚠  Subutilizado',           statusColor: '#FFA07A' },
+  { sec: 'sec2', bar: 'bar2', st: 'st2', title: 'Módulo 2 — Inteligencia Artificial',  pct: 28, barColor: '#FF7B7B', statusText: '✕  Sin adopción detectada',  statusColor: '#FF7B7B' },
+  { sec: 'sec3', bar: 'bar3', st: 'st3', title: 'Módulo 3 — Herramientas Digitales',   pct: 51, barColor: '#FFA07A', statusText: '⚠  Uso parcial',              statusColor: '#FFA07A' },
+]
+
+/* ─── Sub-components ─── */
+function Row({ show, children, mt = 0, mb = 3 }: {
+  show: boolean; children: React.ReactNode; mt?: number; mb?: number
+}) {
+  return (
+    <div style={{
+      opacity:    show ? 1 : 0,
+      transform:  show ? 'translateY(0)' : 'translateY(5px)',
+      transition: 'opacity 0.22s ease, transform 0.22s ease',
+      marginTop:  mt, marginBottom: mb,
+      fontSize: 13, lineHeight: 1.65,
+      fontFamily: 'ui-monospace, "Cascadia Code", "Fira Code", monospace',
+    }}>
+      {children}
+    </div>
+  )
+}
+
+function ModuleBlock({ mod, show, showBar, showSt }: {
+  mod: typeof MODULES[0]; show: boolean; showBar: boolean; showSt: boolean
+}) {
+  return (
+    <>
+      <Row show={show} mt={14} mb={6}>
+        <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{mod.title}</span>
+      </Row>
+
+      {/* Bar row */}
+      <div style={{
+        opacity: showBar ? 1 : 0,
+        transition: 'opacity 0.2s ease',
+        display: 'flex', alignItems: 'center', gap: 10,
+        fontSize: 11, color: 'rgba(255,255,255,0.35)',
+        fontFamily: 'ui-monospace, monospace',
+        marginBottom: 4,
+      }}>
+        <span style={{ flexShrink: 0 }}>Nivel</span>
+        <div style={{
+          flex: 1, height: 4,
+          background: 'rgba(255,255,255,0.07)',
+          borderRadius: 9999, overflow: 'hidden',
+        }}>
+          <div style={{
+            height: '100%',
+            background: mod.barColor,
+            borderRadius: 9999,
+            width: showBar ? `${mod.pct}%` : '0%',
+            transition: 'width 0.75s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: `0 0 8px ${mod.barColor}88`,
+          }} />
+        </div>
+        <span style={{ color: mod.barColor, fontWeight: 700, minWidth: 32, textAlign: 'right' }}>
+          {mod.pct}%
+        </span>
+      </div>
+
+      <Row show={showSt} mb={0}>
+        <span style={{ color: mod.statusColor, fontSize: 12 }}>{mod.statusText}</span>
+      </Row>
+    </>
+  )
+}
+
+/* ─── Terminal card ─── */
+function DiagnosisTerminal() {
+  const [visible, setVisible] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    const canvas = canvasRef.current!
-    const ctx    = canvas.getContext('2d')!
-    const W = canvas.width
-    const H = canvas.height
-    const CX = W / 2
-    const CY = H / 2
-    const BG_R = PLANETS[4].r + 38
+    let idx = 0
+    let timer: ReturnType<typeof setTimeout>
 
-    function draw(ts: number) {
-      if (!startRef.current) startRef.current = ts
-      const elapsed = (ts - startRef.current) / 1000
+    const next = () => {
+      if (idx >= STEPS.length) return
+      const { id, ms } = STEPS[idx]
+      idx++
 
-      ctx.clearRect(0, 0, W, H)
-
-      /* Dark circular bg with subtle radial gradient */
-      const bgGrad = ctx.createRadialGradient(CX, CY, 0, CX, CY, BG_R)
-      bgGrad.addColorStop(0,   '#0A0C20')
-      bgGrad.addColorStop(1,   '#040510')
-      ctx.beginPath()
-      ctx.arc(CX, CY, BG_R, 0, Math.PI * 2)
-      ctx.fillStyle = bgGrad
-      ctx.fill()
-
-      /* Subtle crosshair */
-      ctx.save()
-      ctx.strokeStyle = 'rgba(255,255,255,0.04)'
-      ctx.lineWidth = 0.5
-      ctx.beginPath()
-      ctx.moveTo(CX - BG_R, CY); ctx.lineTo(CX + BG_R, CY)
-      ctx.moveTo(CX, CY - BG_R); ctx.lineTo(CX, CY + BG_R)
-      ctx.stroke()
-      ctx.restore()
-
-      /* Orbital rings — fine dashes */
-      for (const p of PLANETS) {
-        ctx.setLineDash([2, 10])
-        ctx.beginPath()
-        ctx.arc(CX, CY, p.r, 0, Math.PI * 2)
-        ctx.strokeStyle = 'rgba(255,255,255,0.06)'
-        ctx.lineWidth = 0.75
-        ctx.stroke()
-        ctx.setLineDash([])
-
-        /* Tiny tick marks every 45° on each orbit */
-        for (let a = 0; a < 360; a += 45) {
-          const tickRad = (a - 90) * Math.PI / 180
-          const x1 = CX + (p.r - 3) * Math.cos(tickRad)
-          const y1 = CY + (p.r - 3) * Math.sin(tickRad)
-          const x2 = CX + (p.r + 3) * Math.cos(tickRad)
-          const y2 = CY + (p.r + 3) * Math.sin(tickRad)
-          ctx.beginPath()
-          ctx.moveTo(x1, y1); ctx.lineTo(x2, y2)
-          ctx.strokeStyle = 'rgba(255,255,255,0.08)'
-          ctx.lineWidth = 0.75
-          ctx.stroke()
-        }
+      if (id === '__end') {
+        timer = setTimeout(() => {
+          setVisible(new Set())
+          idx = 0
+          timer = setTimeout(next, 500)
+        }, ms)
+        return
       }
 
-      /* Central star — layered pulse */
-      const pulse = 0.5 + 0.5 * Math.sin(ts * 0.002)
-      for (const [r, a] of [[18 + pulse*6, 0.06], [11 + pulse*3, 0.12], [6, 1]] as [number,number][]) {
-        ctx.beginPath()
-        ctx.arc(CX, CY, r, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(11,179,164,${a})`
-        if (a === 1) { ctx.shadowColor = '#0BB3A4'; ctx.shadowBlur = 20 }
-        ctx.fill()
-        ctx.shadowBlur = 0
-      }
-
-      /* Planets + trails + labels */
-      for (let i = 0; i < PLANETS.length; i++) {
-        const p = PLANETS[i]
-        const rad = ((p.startAngle + elapsed * p.angSpeed) % 360 - 90) * Math.PI / 180
-        const px  = CX + p.r * Math.cos(rad)
-        const py  = CY + p.r * Math.sin(rad)
-
-        /* Update trail */
-        const trail = trailsRef.current[i]
-        trail.unshift({ x: px, y: py })
-        if (trail.length > TRAIL_LEN) trail.pop()
-
-        /* Draw trail */
-        for (let t = 1; t < trail.length; t++) {
-          const alpha = (1 - t / TRAIL_LEN) * 0.35
-          const r2    = p.size * (1 - t / TRAIL_LEN) * 0.7
-          ctx.beginPath()
-          ctx.arc(trail[t].x, trail[t].y, Math.max(r2, 0.5), 0, Math.PI * 2)
-          ctx.fillStyle = p.color
-          ctx.globalAlpha = alpha
-          ctx.fill()
-        }
-        ctx.globalAlpha = 1
-
-        /* Planet dot — clean, no halo */
-        ctx.beginPath()
-        ctx.arc(px, py, p.size, 0, Math.PI * 2)
-        ctx.fillStyle = p.color
-        ctx.shadowColor = p.color
-        ctx.shadowBlur = 8
-        ctx.fill()
-        ctx.shadowBlur = 0
-
-        /* Label — offset outward, larger font */
-        const dx = px - CX, dy = py - CY
-        const len = Math.sqrt(dx*dx + dy*dy) || 1
-        const nx = dx/len, ny = dy/len
-        const lx = px + nx * (p.size + 14)
-        const ly = py + ny * (p.size + 14)
-
-        ctx.font = '500 13px Poppins, sans-serif'
-        ctx.fillStyle = p.color
-        ctx.globalAlpha = 0.9
-        ctx.textAlign    = lx > CX + 8 ? 'left' : lx < CX - 8 ? 'right' : 'center'
-        ctx.textBaseline = ly > CY + 8 ? 'top'  : ly < CY - 8 ? 'bottom' : 'middle'
-        ctx.shadowColor  = p.color
-        ctx.shadowBlur   = 6
-        ctx.fillText(p.label, lx, ly)
-        ctx.shadowBlur   = 0
-        ctx.globalAlpha  = 1
-
-        ctx.globalAlpha  = 1
-      }
-
-      rafRef.current = requestAnimationFrame(draw)
+      setVisible(prev => new Set([...prev, id]))
+      timer = setTimeout(next, ms)
     }
 
-    rafRef.current = requestAnimationFrame(draw)
-    return () => cancelAnimationFrame(rafRef.current)
+    timer = setTimeout(next, 300)
+    return () => clearTimeout(timer)
   }, [])
 
+  const v = (id: string) => visible.has(id)
+
   return (
-    <canvas
-      ref={canvasRef}
-      width={760}
-      height={760}
-      data-no-transition
-      style={{ width: '100%', display: 'block' }}
-    />
+    <div style={{
+      background: '#07091C',
+      border: '1px solid rgba(11,179,164,0.2)',
+      borderRadius: '16px',
+      overflow: 'hidden',
+      boxShadow: '0 8px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(11,179,164,0.06)',
+    }}>
+
+      {/* Window chrome */}
+      <div style={{
+        padding: '11px 16px',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        display: 'flex', alignItems: 'center', gap: '7px',
+        background: 'rgba(255,255,255,0.02)',
+      }}>
+        {['#FF5F57','#FEBC2E','#28C840'].map(c => (
+          <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.85 }} />
+        ))}
+        <span style={{
+          marginLeft: 8, fontSize: 11,
+          fontFamily: 'ui-monospace, monospace',
+          color: 'rgba(255,255,255,0.25)',
+        }}>
+          diagnostico_sincero.sh
+        </span>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: '22px 26px 26px', minHeight: '370px' }}>
+        <style>{`
+          @keyframes blink { 0%,100% { opacity:1 } 50% { opacity:0 } }
+        `}</style>
+
+        {/* Command line */}
+        <Row show={v('cmd1')} mb={8}>
+          <span style={{ color: '#0BB3A4' }}>›&nbsp;</span>
+          <span style={{ color: '#0BB3A4' }}>Iniciando diagnóstico del equipo...</span>
+        </Row>
+
+        {/* Modules */}
+        {MODULES.map(mod => (
+          <ModuleBlock
+            key={mod.sec}
+            mod={mod}
+            show={v(mod.sec)}
+            showBar={v(mod.bar)}
+            showSt={v(mod.st)}
+          />
+        ))}
+
+        {/* Divider */}
+        <div style={{
+          opacity: v('div') ? 1 : 0,
+          transition: 'opacity 0.3s ease',
+          height: 1,
+          background: 'rgba(255,255,255,0.08)',
+          margin: '16px 0',
+        }} />
+
+        {/* Results */}
+        <Row show={v('res1')} mb={4}>
+          <span style={{ color: '#ffffff', fontWeight: 700 }}>
+            ✓&nbsp; 3 oportunidades de alto impacto detectadas
+          </span>
+        </Row>
+        <Row show={v('res2')} mb={0}>
+          <span style={{ color: 'rgba(255,255,255,0.4)' }}>
+            Tiempo estimado al impacto:&nbsp;
+          </span>
+          <span style={{ color: '#0BB3A4', fontWeight: 600 }}>{'< 60 días'}</span>
+        </Row>
+
+        {/* CTA line */}
+        <Row show={v('cta')} mt={18} mb={0}>
+          <span style={{ color: '#0BB3A4' }}>›&nbsp;</span>
+          <span style={{ color: '#0BB3A4', fontWeight: 700 }}>Agendar diagnóstico gratuito</span>
+          <span style={{
+            display: 'inline-block',
+            width: 8, height: 14,
+            background: '#0BB3A4',
+            marginLeft: 3,
+            verticalAlign: 'middle',
+            borderRadius: 1,
+            animation: v('cta') ? 'blink 1s step-end infinite' : 'none',
+          }} />
+        </Row>
+      </div>
+    </div>
   )
 }
 
@@ -174,9 +227,9 @@ export default function CTA() {
           scrollTrigger: { trigger: sectionRef.current, start: 'top 68%' } }
       )
       gsap.fromTo(rightRef.current,
-        { scale: 0.9, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.9, ease: 'power3.out',
-          scrollTrigger: { trigger: sectionRef.current, start: 'top 68%' }, delay: 0.12 }
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.85, ease: 'power3.out',
+          scrollTrigger: { trigger: sectionRef.current, start: 'top 68%' }, delay: 0.15 }
       )
     }, sectionRef)
     return () => ctx.revert()
@@ -185,16 +238,12 @@ export default function CTA() {
   return (
     <section
       ref={sectionRef}
-      style={{
-        background: 'var(--bg-secondary)',
-        padding: '130px 0',
-        transition: 'background 0.3s ease',
-      }}
+      style={{ background: 'var(--bg-secondary)', padding: '130px 0', transition: 'background 0.3s ease' }}
     >
       <div style={{
         maxWidth: '1100px', margin: '0 auto', padding: '0 48px',
         display: 'grid', gridTemplateColumns: '1fr 1fr',
-        gap: '48px', alignItems: 'center',
+        gap: '64px', alignItems: 'center',
       }}>
 
         {/* ── Left ── */}
@@ -214,20 +263,16 @@ export default function CTA() {
             color: 'var(--text-heading)', marginBottom: '28px',
           }}>
             Ve exactamente qué está{' '}
-            <em style={{ fontStyle: 'italic', color: '#0BB3A4', fontWeight: 600 }}>
-              frenando
-            </em>
+            <em style={{ fontStyle: 'italic', color: '#0BB3A4', fontWeight: 600 }}>frenando</em>
             {' '}a tu equipo — en 30 minutos.
           </h2>
 
           <p style={{
             fontFamily: 'Poppins, sans-serif', fontSize: '15px', fontWeight: 400,
-            lineHeight: 1.7, color: 'var(--text-muted)',
-            maxWidth: '440px', marginBottom: '44px',
+            lineHeight: 1.7, color: 'var(--text-muted)', maxWidth: '440px', marginBottom: '44px',
           }}>
-            Sin teatro de consultoría. Te mostramos qué herramientas
-            generan el mayor impacto en tu operación y cómo
-            implementarlas la semana siguiente.
+            Sin teatro de consultoría. Te mostramos qué herramientas generan el mayor
+            impacto en tu operación y cómo implementarlas la semana siguiente.
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
@@ -244,15 +289,13 @@ export default function CTA() {
               }}
               onMouseEnter={e => {
                 const el = e.currentTarget as HTMLAnchorElement
-                el.style.background = '#0D15B2'
-                el.style.transform  = 'translateY(-2px)'
-                el.style.boxShadow  = '0 8px 28px rgba(0,0,80,0.3)'
+                el.style.background = '#0D15B2'; el.style.transform = 'translateY(-2px)'
+                el.style.boxShadow = '0 8px 28px rgba(0,0,80,0.3)'
               }}
               onMouseLeave={e => {
                 const el = e.currentTarget as HTMLAnchorElement
-                el.style.background = '#000050'
-                el.style.transform  = 'translateY(0)'
-                el.style.boxShadow  = '0 4px 20px rgba(0,0,80,0.2)'
+                el.style.background = '#000050'; el.style.transform = 'translateY(0)'
+                el.style.boxShadow = '0 4px 20px rgba(0,0,80,0.2)'
               }}
             >
               Agendar diagnóstico gratuito →
@@ -262,8 +305,7 @@ export default function CTA() {
               href="#clientes"
               style={{
                 fontFamily: 'Poppins, sans-serif', fontSize: '14px', fontWeight: 500,
-                color: 'var(--text-muted)', textDecoration: 'none',
-                transition: 'color 0.2s ease',
+                color: 'var(--text-muted)', textDecoration: 'none', transition: 'color 0.2s ease',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#0BB3A4' }}
               onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-muted)' }}
@@ -273,9 +315,9 @@ export default function CTA() {
           </div>
         </div>
 
-        {/* ── Right: solar system ── */}
+        {/* ── Right: diagnosis terminal ── */}
         <div ref={rightRef} style={{ opacity: 0 }}>
-          <SolarSystemCanvas />
+          <DiagnosisTerminal />
         </div>
 
       </div>
