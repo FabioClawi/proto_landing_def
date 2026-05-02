@@ -1,33 +1,17 @@
 import './index.css'
-import Nav from './components/Nav'
+import Nav  from './components/Nav'
+import Hero from './sections/Hero'
 import { useTheme } from './hooks/useTheme'
 
 export default function App() {
   const { theme } = useTheme()
 
   return (
-    <main style={{ background: 'var(--bg)', minHeight: '300vh', transition: 'background 0.3s ease' }}>
+    <main style={{ background: 'var(--bg)', minHeight: '100vh', transition: 'background 0.3s ease' }}>
       <Nav />
+      <Hero />
 
-      {/* Placeholder hero — dark section so nav reads correctly over it */}
-      <div style={{
-        height: '100vh',
-        background: '#000050',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        gap: '16px',
-      }}>
-        <span style={{ color: '#0BB3A4', fontSize: '3rem', fontWeight: 600, letterSpacing: '0.2em' }}>
-          SINCERO
-        </span>
-        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.875rem' }}>
-          Hero section — próximamente
-        </span>
-      </div>
-
-      {/* Placeholder body — shows theme switching on light/dark */}
+      {/* Placeholder body — will be replaced by sections */}
       <div style={{
         height: '200vh',
         background: 'var(--bg)',
@@ -37,8 +21,8 @@ export default function App() {
         paddingTop: '80px',
         transition: 'background 0.3s ease',
       }}>
-        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-          Tema activo: <strong style={{ color: 'var(--text-heading)' }}>{theme}</strong> — scroll para ver la nav compactarse
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontFamily: 'Poppins, sans-serif' }}>
+          Tema activo: <strong style={{ color: 'var(--text-heading)' }}>{theme}</strong>
         </span>
       </div>
     </main>
